@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/Mock.js/1.0.1-beta3/mock.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+  </head>
+  <body>
+    <script>
+      Mock.mock('/api/user/ll', {
+        'p|1-10': '※'
+      })
+      $.ajax('/api/user').then(res => console.log(res))
+      // var request = new XMLHttpRequest();
+      // function dispatchEvent(event) {
+      //   var ontype = "on" + event.type;
+      //   console.log(ontype);
+      //   if (this[ontype]) request[ontype](event);
+      // }
+      // XMLHttpRequest.prototype.send = function () {
+      //   setTimeout(() => {
+      //     console.log(22222);
+      //     this.readyState = 2;
+      //     dispatchEvent(new Event("readystatechange" /*, false, false, that*/));
+      //     console.log(this);
+      //   }, 1000);
+      // };
+      //   window.XMLHttpRequest = myXMLHttpRequest;
+
+      // request.onreadystatechange = function () {
+      //   // 回调
+      //   console.log(request.status);
+      //   if (request.readyState === 4) {
+      //     // 成功
+      //     if (request.status == 200) {
+      //       console.log(request.responseText); // 服务器响应内容
+      //     } else {
+      //       console.log(request.status);
+      //     }
+      //   }
+      // };
+
+      // GET 请求
+      // request.open("GET", "/api");
+      // request.send();
+    </script>
+  </body>
+</html>

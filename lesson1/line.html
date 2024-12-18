@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  </head>
+  <body>
+    <div id="wrapper"></div>
+    <script>
+      let dimensions = {
+        width: window.innerWidth * 0.9,
+        height: 400,
+        margin: {
+          top: 15,
+          right: 15,
+          bottom: 40,
+          left: 60,
+        },
+      };
+      dimensions.boundeWidth =
+        dimensions.width - dimensions.margin.left - dimensions.margin.right;
+      dimensions.boundeHeight =
+        dimensions.height - dimensions.margin.top - dimensions.margin.bottom;
+
+      function drawLineChart(wrapper, dimensions, data) {
+        console.log(data)
+        const svg = wrapper
+          .append("svg")
+          .attr("width", dimensions.boundeWidth)
+          .attr("height", dimensions.boundeHeight);
+
+        const bounds = svg.append("g").style(
+          "transform",
+          `translate(
+          ${dimensions.margin.left}px, ${dimensions.margin.right}px
+        )`
+        );
+
+        const dateParse = d3.timeParse("%Y-%m-%d");
+        const xAccessor = (d) => dateParse(d.date);
+        const xScale = d3
+          .scaleTime()
+          .domain(d3.extent(data, xAccessor))
+          .range([0, dimensions.boundeWidth]);
+
+        const yAccessor = (d) => d.temperatureMax;
+        const yScale = d3
+          .scaleLinear()
+          .domain(d3.extent(data, yAccessor))
+          .range([dimensions.boundeHeight, 0]);
+
+        const lineGenerator = d3
+          .line()
+          .x((d) => xScale(xAccessor(d)))
+          .y((d) => yScale(yAccessor(d)));
+
+        const line = bounds
+          .append("path")
+          .attr("d", lineGenerator(data))
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1);
+      }
+      d3.json("./weather.json").then(res => {
+        drawLineChart(d3.select("#wrapper"), dimensions, res);
+      })
+    </script>
+  </body>
+</html>

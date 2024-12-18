@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style></style>
+    <script src="https://d3js.org/d3.v5.js"></script>
+  </head>
+  <body>
+    <svg width="1000" height="200"></svg>
+    <script>
+      window.onload = function () {
+        var svg = d3.select("svg");
+        var width = +svg.attr("width");
+        var height = +svg.attr("height");
+        var data = [];
+        var datay = [];
+        var num = 20;
+        for (var i = 0; i < num; i++) {
+          data.push([i, i + Math.ceil(Math.random() * 5)]);
+        }
+
+        var xScale = d3.scaleLinear().domain([0, num]).range([0, width]);
+        var yScale = d3.scaleLinear().domain([0, num]).range([0, height]);
+
+        var line = d3
+          .line()
+          .x((d) => 0)
+          .y((d) => yScale(d[1]));
+
+        var eline = d3
+          .line()
+          .curve(d3.curveBasis)
+          .x((d) => {
+            return xScale(d[0]);
+          })
+          .y((d) => yScale(d[1]));
+
+        svg
+          .append("path")
+          .attr("d", line(data))
+          .attr("fill", "none")
+          .attr("stroke", "purple")
+          .transition()
+          .duration((d, i) => 1000)
+          .attrTween("d", () => {
+            var d = {
+              startAngle: a.startAngle,
+              endAngle: a._endAngle,
+            };
+            i = d3.interpolate(a, d);
+            return (t) => {
+              return arc(i(t));
+            };
+          });
+
+        svg
+          .append("g")
+          .attr("fill", "none")
+          .attr("pointer-events", "all")
+          .selectAll("rect")
+          .data(data)
+          .join("rect")
+          .attr("x", ([a, b]) => xScale(a))
+          .attr("width", ([a, b]) => {
+            return xScale(b) - xScale(a);
+          })
+          .attr("height", height)
+          .on("mouseover", (event, a) => console.log(a));
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/Mock.js/1.0.1-beta3/mock.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+  </head>
+  <body>
+    <script>
+      var request = new XMLHttpRequest();
+      function dispatchEvent(event) {
+        var ontype = "on" + event.type;
+        if (request[ontype]) request[ontype](event);
+      }
+      XMLHttpRequest.prototype.send = function () {
+        request.readyState = 2;
+        dispatchEvent(new Event("readystatechange" /*, false, false, that*/));
+        request.readyState = 3;
+        dispatchEvent(new Event("readystatechange" /*, false, false, that*/));
+        // request.status = 200;
+        // request.readyState = 4;
+        // dispatchEvent(new Event("readystatechange" /*, false, false, that*/));
+        // dispatchEvent(new Event("load" /*, false, false, that*/));
+        // dispatchEvent(new Event("loadend" /*, false, false, that*/));
+      };
+      //   window.XMLHttpRequest = myXMLHttpRequest;
+
+      request.onreadystatechange = function () {
+        // 回调
+        console.log(request.readyState);
+        if (request.readyState === 4) {
+          // 成功
+          if (request.status == 200) {
+            console.log(request.responseText); // 服务器响应内容
+          } else {
+            console.log(request.status);
+          }
+        }
+      };
+
+      // GET 请求
+      request.open("GET", "/api");
+      request.send();
+    </script>
+  </body>
+</html>

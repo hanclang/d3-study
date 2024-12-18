@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdn.bootcdn.net/ajax/libs/d3/7.9.0/d3.min.js"></script>
+</head>
+<body>
+  <div id="wrapper"></div>
+  <script>
+    let dimensions = {
+      width: window.innerWidth * 0.9,
+      height: 400,
+      margin: {
+        top: 15,
+        right: 15,
+        bottom: 40,
+        left: 60
+      }
+    }
+    dimensions.boundeWidth = dimensions.width - dimensions.margin.left - dimensions.margin.right
+    dimensions.boundeHeight = dimensions.height - dimensions.margin.top - dimensions.margin.bottom
+    const wrapper = d3.select("#wrapper")
+    const svg = wrapper.append("svg")
+    svg.attr('width', dimensions.width)
+    svg.attr('height', dimensions.height)
+    const bounds = svg.append('g').style('transform', `translate(${
+    dimensions.margin.left}px, ${dimensions.margin.top}px)`)
+    
+    async function drawLineChart(wrapper, dms, data) {
+      const dataset = await d3.json("./lesson1/weather.json")
+      const yAccessor = d => d.temperatureMax
+      const yScale = d3.scaleLinear()
+        .domain(d3.extent(dataset, yAccessor))
+        .range([dimensions.boundeHeight, 0])
+      const dateParser = d3.timeParse('%Y-%m-%d')
+      // const yAccessor = d => d.temperatureMax
+      const xAccessor = d => d.date
+      // const xScale = d3.scaleTime()
+      //   .domain(d3.extent(dataset, xAccessor))
+      //   .range([0, dimensions.boundeWidth])
+      const xScale = d3.scaleBand()
+                      .domain(d3.groupSort(dataset, d => d.date, d => d.date))
+                      .range([0, dimensions.boundeWidth])
+                      .padding(0.1)
+      console.log("🚀 ~ drawLineChart ~ xAccessor:", d3.extent(dataset, xAccessor))
+      const lineGenerator = d3.line()
+        .x(d => xScale(xAccessor(d)))
+        .y(d => yScale(yAccessor(d)))
+
+      // const lineGenerator = d3.line()
+      //   .x(d => d.x)
+      //   .y(d => d.y)
+
+      // const line = bounds.append('path')
+      //   .attr('d', lineGenerator(dataset))
+      //   .attr('fill', 'none')
+      //   .attr('stroke', '#af9358')
+      //   .attr('stroke-width', 1)
+      bounds.append('rect')
+      bounds.append('div')
+      bounds.attr("fill", "steelblue").selectAll("rect").data(dataset).join("rect")
+        .attr('x', d=> {
+          const x = xScale(xAccessor(d))
+          return x
+        })
+        .attr('y', d => yScale(yAccessor(d)))
+        .attr('height', d => 400-yScale(yAccessor(d)))
+        .attr('width', xScale.bandwidth())
+    }
+    drawLineChart()
+  </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://d3js.org/d3.v5.js"></script>
+  </head>
+  <body>
+    <script>
+      window.onload = function () {
+        const pieData = [
+          { x: "雨露5555计划", y: 20 },
+          { x: "金融扶贫", y: 20 },
+          { x: "产业扶贫", y: 70 },
+          { x: "基础设施", y: 40 },
+        ];
+        const [width, height] = [450, 350];
+
+        let svg = d3
+          .select("body")
+          .append("svg")
+          .attr("width", width)
+          .attr("height", height);
+
+        let pie = d3
+          .pie()
+          .value((d) => d.y)
+          .sort(null);
+        let drawData = pie(pieData);
+        let sum = 0;
+        drawData.forEach(function (d, i) {
+          d._endAngle = d.endAngle;
+          d.endAngle = d.startAngle;
+          d.duration = 1000; //动画时长2秒，计算每一个弧形所用动画时间
+          d.delaytime = 1000;
+          sum += d.duration;
+        });
+        let radius = (Math.min(width, height) * 0.8) / 2;
+        let arc = d3.arc().innerRadius(0).outerRadius(radius);
+
+        let pathParent = svg
+          .selectAll("g")
+          .data(drawData)
+          .enter()
+          .append("g")
+          .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+        let colorScale = d3
+          .scaleOrdinal()
+          .domain(d3.range(0, pieData.length))
+          .range(d3.schemeCategory10);
+
+        pathParent
+          .append("path")
+          .attr("d", (d) => arc(d))
+          .attr("fill", (d) => colorScale(d.index))
+          .transition()
+          .duration((d, i) => d.duration)
+          .ease(d3.easeLinear)
+          .delay((d, i) => i * 1000)
+          .attrTween("d", (a, i) => {
+            var d = {
+              startAngle: a.startAngle,
+              endAngle: a._endAngle,
+            };
+            i = d3.interpolate(a, d);
+            return (t) => {
+              return arc(i(t));
+            };
+          });
+        pathParent
+          .append("text")
+          .transition()
+          .duration((d, i) => d.duration)
+          .ease(d3.easeLinear)
+          .delay((d, i) => i * 1000)
+          .attrTween("transform", (a, i) => {
+            var d = {
+              startAngle: a.startAngle,
+              endAngle: a._endAngle,
+            };
+            var a = [0, 0];
+            i = d3.interpolate(a, arc.centroid(d));
+            return (t) => {
+              return "translate(" + i(t) + ")";
+            };
+          })
+          .attr("text-anchor", "middle")
+          .text((d) => d.data.x);
+      };
+    </script>
+  </body>
+</html>

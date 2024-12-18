@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body{
+      --progress: red
+    }
+    #app{
+      background-color: var(--progress);
+      width: 100px;
+      height: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    var app = document.querySelector('#app')
+    app.style.fontSize = '14px'
+    // app.style.setProperty('--progress', 'red')
+    var arr = [99]
+    arr.unshift(1,2,3,4,5)
+    arr.unshift(6)
+
+    var str = 'www'
+    str.replace(/(^\s*)|(\s*)$/g)
+    console.log(arr)
+  </script>
+</body>
+</html>
