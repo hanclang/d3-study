@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rect</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  </head>
+  <body>
+    <div id="wrapper"></div>
+    <script>
+      /**
+       * @params arr
+       * @params length
+       */
+      function getRandom4Arr(arr, length) {
+        const step = arr.length / length;
+        var newArr = [];
+        for (var i = 0; i < length; i++) {
+          var index =
+            Math.floor(i * step) > arr.length
+              ? arr.length - 1
+              : Math.floor(i * step);
+          var item = arr[index];
+          newArr.push(item);
+        }
+        return newArr;
+      }
+      let dimensions = {
+        width: window.innerWidth * 0.9,
+        height: 400,
+        margin: {
+          top: 15,
+          right: 15,
+          bottom: 40,
+          left: 60,
+        },
+      };
+      dimensions.boundedWidth =
+        dimensions.width - dimensions.margin.left - dimensions.margin.right;
+      dimensions.boundedHeight =
+        dimensions.height - dimensions.margin.top - dimensions.margin.bottom;
+      function drawRectChart(wrapper, dimensions, data) {
+        const svg = wrapper
+          .append("svg")
+          .style("width", dimensions.width)
+          .style("height", dimensions.height);
+        const bounds = svg
+          .append("g")
+          .style(
+            "transform",
+            `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
+          );
+
+        const xAccessor = (d) => d.date;
+        const xScale = d3
+          .scaleBand()
+          .domain(d3.groupSort(data, xAccessor, xAccessor))
+          .range([0, dimensions.boundedWidth])
+          .padding(0.1);
+
+        const yAccessor = (d) => d.temperatureMax;
+        const yScale = d3
+          .scaleLinear()
+          .domain(d3.extent(data, yAccessor))
+          .range([dimensions.boundedHeight, 0]);
+
+        bounds
+          .attr("fill", "steelblue")
+          .selectAll("rect")
+          .data(data)
+          .join("rect")
+          .attr("x", (d) => xScale(xAccessor(d)))
+          .attr("y", (d) => yScale(yAccessor(d)))
+          .attr("width", xScale.bandwidth())
+          .attr("height", (d) => yScale(0) - yScale(yAccessor(d)));
+
+        const yAxisGenerator = d3.axisLeft().scale(yScale);
+        const yAxis = bounds.append("g").call(yAxisGenerator);
+
+        const xAxisGenerator = d3
+          .axisBottom()
+          .scale(xScale)
+          .tickValues(getRandom4Arr(xScale.domain(), 10))
+          .tickSizeOuter(0);
+        console.log(getRandom4Arr(xScale.domain(), 10));
+        const xAxis = bounds
+          .append("g")
+          .call(xAxisGenerator)
+          .style("transform", `translateY(${dimensions.boundedHeight}px)`);
+      }
+      d3.json("./weather.json").then((res) => {
+        drawRectChart(d3.select("#wrapper"), dimensions, res);
+      });
+    </script>
+  </body>
+</html>
