@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>scatterplot</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  </head>
+  <body>
+    <div id="wrapper"></div>
+    <script>
+      const dimensions = {
+        width: window.innerWidth * 0.9,
+        height: window.innerHeight * 0.9,
+        margin: {
+          left: 50,
+          right: 10,
+          top: 50,
+          bottom: 50,
+        },
+      };
+      dimensions.boundeWidth =
+        dimensions.width - dimensions.margin.left - dimensions.margin.right;
+      dimensions.boundeHeight =
+        dimensions.height - dimensions.margin.top - dimensions.margin.bottom;
+      function drawScatterplot(wrapper, dimensions, dataset) {
+        const svg = d3
+          .select("#wrapper")
+          .append("svg")
+          .attr("width", dimensions.width)
+          .attr("height", dimensions.height);
+        const bounds = svg
+          .append("g")
+          .style(
+            "transform",
+            `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
+          );
+
+        const xAccessor = (d) => d.dewPoint;
+        const yAccessor = (d) => d.humidity;
+        const xScale = d3
+          .scaleLinear()
+          .domain(d3.extent(dataset, xAccessor))
+          .range([0, dimensions.boundeWidth])
+          .nice();
+        const yScale = d3
+          .scaleLinear()
+          .domain(d3.extent(dataset, yAccessor))
+          .range([dimensions.boundeHeight, 0])
+          .nice();
+
+        const colorScale = d3.scaleLinear().domain(d3.extent(dataset, yAccessor)).range(['green', 'red'])
+
+        bounds
+          .selectAll("circle")
+          .data(dataset)
+          .join("circle")
+          .attr("cx", (d) => xScale(xAccessor(d)))
+          .attr("cy", (d) => yScale(yAccessor(d)))
+          .attr('fill', d => colorScale(yAccessor(d)))
+          .attr("r", 5);
+
+        const xAxis = bounds
+          .append("g")
+          .style("transform", `translate(0px, ${dimensions.boundeHeight}px)`)
+          .call(d3.axisBottom(xScale));
+        const yAxis = bounds.append('g')
+            .call(d3.axisLeft(yScale));
+      }
+      d3.json("./weather.json").then((dataset) => {
+        drawScatterplot(d3.select("#wrapper"), dimensions, dataset);
+      });
+    </script>
+  </body>
+</html>
