@@ -19,9 +19,9 @@
           bottom: 50,
         },
       };
-      dimensions.boundeWidth =
+      dimensions.boundedWidth =
         dimensions.width - dimensions.margin.left - dimensions.margin.right;
-      dimensions.boundeHeight =
+      dimensions.boundedHeight =
         dimensions.height - dimensions.margin.top - dimensions.margin.bottom;
       function drawScatterplot(wrapper, dimensions, dataset) {
         const svg = d3
@@ -41,12 +41,12 @@
         const xScale = d3
           .scaleLinear()
           .domain(d3.extent(dataset, xAccessor))
-          .range([0, dimensions.boundeWidth])
+          .range([0, dimensions.boundedWidth])
           .nice();
         const yScale = d3
           .scaleLinear()
           .domain(d3.extent(dataset, yAccessor))
-          .range([dimensions.boundeHeight, 0])
+          .range([dimensions.boundedHeight, 0])
           .nice();
 
         const colorScale = d3.scaleLinear().domain(d3.extent(dataset, yAccessor)).range(['green', 'red'])
@@ -62,7 +62,7 @@
 
         const xAxis = bounds
           .append("g")
-          .style("transform", `translate(0px, ${dimensions.boundeHeight}px)`)
+          .style("transform", `translate(0px, ${dimensions.boundedHeight}px)`)
           .call(d3.axisBottom(xScale));
         const yAxis = bounds.append('g')
             .call(d3.axisLeft(yScale));
@@ -73,3 +73,20 @@
     </script>
   </body>
 </html>
+
+
+
+
+
+
+
+kkkk;
+hhhhhhhh;
+hhhhhhhhhhhhh;
+hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh;
+hhhhh;
+hhhhh;
+hhhhh;
+hhhhh;
+hhhhh;
+hhhhh;

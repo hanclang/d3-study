@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  </head>
+  <body>
+    <div id="wrapper"></div>
+    <script>
+      function drawBarChart(wrapper, dataset) {
+        const metricAccessor = (d) => d.humidity;
+        const width = 600;
+        const dimensions = {
+          width: width,
+          height: width * 0.6,
+          margin: {
+            top: 30,
+            right: 15,
+            bottom: 40,
+            left: 60,
+          },
+        };
+        dimensions.boundedWidth =
+          dimensions.width - dimensions.margin.left - dimensions.margin.right;
+        dimensions.boundedHeight =
+          dimensions.height - dimensions.margin.top - dimensions.margin.bottom;
+        const svg = d3
+          .select(wrapper)
+          .append("svg")
+          .attr("width", dimensions.width)
+          .attr("height", dimensions.height);
+        const bounds = svg
+          .append("g")
+          .style(
+            "transform",
+            `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`
+          );
+
+        const xScale = d3
+          .scaleLinear()
+          .domain(d3.extent(dataset, metricAccessor))
+          .range([0, dimensions.boundedWidth])
+          .nice();
+
+        const binsGenerator = d3
+          .histogram()
+          .domain(xScale.domain())
+          .value(metricAccessor)
+          .thresholds(10);
+        const bins = binsGenerator(dataset);
+
+        const yAccessor = (d) => d.length;
+        const yScale = d3
+          .scaleLinear()
+          .domain([0, d3.max(bins, yAccessor)])
+          .range([dimensions.boundedHeight, 0])
+          .nice();
+
+        const binGroups = bounds
+          .append("g")
+          .selectAll("g")
+          .data(bins)
+          .enter()
+          .append("g");
+        binGroups
+          .append("rect")
+          .attr("x", (d, index) => {
+            console.log(index);
+            return xScale(d.x0) + 0.5;
+          })
+          .attr("y", (d) => yScale(yAccessor(d)))
+          .attr("width", (d) => xScale(d.x1) - xScale(d.x0) - 0.5)
+          .attr(
+            "height",
+            (d) => dimensions.boundedHeight - yScale(yAccessor(d))
+          )
+          .attr("fill", "cornflowerblue")
+
+        binGroups.append('text')
+          .attr('x', d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2)
+          .attr('y', d => yScale(yAccessor(d)) - 5)
+          .text(yAccessor)
+        
+        const xAxisGenerator = d3.axisBottom().scale(xScale)
+        const xAxis = bounds.append("g")
+          .call(xAxisGenerator).style("transform", `translateY(${dimensions.boundedHeight}px)`)
+
+        const yAxisGenerator = d3.axisLeft().scale(yScale)
+        svg.append('g').call(yAxisGenerator).style('transform', `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`)
+        console.log("🚀 ~ drawBarChart ~ binGroups:", binGroups);
+      }
+      d3.json("./weather.json").then((dataset) => {
+        drawBarChart("#wrapper", dataset);
+      });
+    </script>
+  </body>
+</html>
