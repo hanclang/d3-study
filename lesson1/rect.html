@@ -48,7 +48,7 @@
           .domain(d3.extent(data, yAccessor))
           .range([dimensions.boundedHeight, 0]);
 
-        bounds
+        bounds.append('g')
           .attr("fill", "steelblue")
           .selectAll("rect")
           .data(data)
@@ -74,6 +74,7 @@
           .append("g")
           .call(xAxisGenerator)
           .style("transform", `translateY(${dimensions.boundedHeight}px)`);
+        
       }
       d3.json("./weather.json").then((res) => {
         drawRectChart(d3.select("#wrapper"), dimensions, res);

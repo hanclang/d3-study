@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>line</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/d3/7.9.0/d3.min.js"></script>
+    <style>
+      #wrapper {
+        position: relative;
+      }
+      .tooltip {
+        position: absolute;
+        padding: 5px;
+        background-color: red;
+        box-shadow: #5e5e5e 1px 1px 4px 1px;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="height: 500px"></div>
+    <div id="wrapper">
+      <div class="tooltip"></div>
+    </div>
+    <script>
+      let dimensions = {
+        width: window.innerWidth * 0.9,
+        height: 400,
+        margin: {
+          top: 15,
+          right: 15,
+          bottom: 40,
+          left: 60,
+        },
+      };
+      dimensions.boundedWidth =
+        dimensions.width - dimensions.margin.left - dimensions.margin.right;
+      dimensions.boundedHeight =
+        dimensions.height - dimensions.margin.top - dimensions.margin.bottom;
+
+      function drawLineChart(wrapper, dimensions, data) {
+        console.log(data);
+        const svg = wrapper
+          .append("svg")
+          .attr("width", dimensions.width)
+          .attr("height", dimensions.height);
+
+        const bounds = svg.append("g").style(
+          "transform",
+          `translate(
+          ${dimensions.margin.left}px, ${dimensions.margin.right}px
+        )`
+        );
+
+        const dateParse = d3.timeParse("%Y-%m-%d");
+        const xAccessor = (d) => dateParse(d.date);
+        const xScale = d3
+          .scaleTime()
+          .domain(d3.extent(data, xAccessor))
+          .range([0, dimensions.boundedWidth]);
+
+        const yAccessor = (d) => d.temperatureMax;
+        const yScale = d3
+          .scaleLinear()
+          .domain(d3.extent(data, yAccessor))
+          .range([dimensions.boundedHeight, 0]);
+
+        const lineGenerator = d3
+          .line()
+          .x((d) => xScale(xAccessor(d)))
+          .y((d) => yScale(yAccessor(d)));
+
+        const line = bounds
+          .append("path")
+          .attr("d", lineGenerator(data))
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1);
+
+        const yAxisGenerator = d3.axisLeft().scale(yScale);
+        const yAxis = bounds.append("g").call(yAxisGenerator);
+
+        const xAxisGenerator = d3
+          .axisBottom()
+          .scale(xScale)
+          .tickFormat(d3.timeFormat("%Y-%m-%d"));
+        const xAxis = bounds
+          .append("g")
+          .call(xAxisGenerator)
+          .style("transform", `translateY(${dimensions.boundedHeight}px)`);
+
+        bounds
+          .append("g")
+          .append("rect")
+          .attr("fill", "transparent")
+          .attr("width", dimensions.boundedWidth)
+          .attr("height", dimensions.boundedHeight)
+          .on("mousemove", function (event, datum) {
+            const [x, y] = d3.pointer(event);
+            const hoveredDate = xScale.invert(x);
+
+            const getDistanceFromHoveredDate = (d) => {
+              return Math.abs(xAccessor(d) - hoveredDate);
+            };
+            const index = d3.scan(
+              data,
+              (a, b) =>
+                getDistanceFromHoveredDate(a) - getDistanceFromHoveredDate(b)
+            );
+            const closestXValue = xAccessor(data[index]);
+            const closestYValue = yAccessor(data[index]);
+            const formatDate = d3.timeFormat("%B %A %-d, %Y");
+            const tooltip = d3.select(".tooltip");
+            tooltip.append("div").text(formatDate(closestXValue));
+            const formatTemperature = (d) => `${d3.format(".1f")(d)}°F`;
+            tooltip.append("div").html(formatTemperature(closestYValue));
+            const tooltipx = xScale(closestXValue) + dimensions.margin.left;
+            const tooltipy = yScale(closestYValue) + dimensions.margin.top;
+            d3.select(".tooltip")
+              .style("opacity", 1)
+              .style("transform", `translate(${tooltipx}px,${tooltipy}px)`);
+          })
+            
+          .on("mouseleave", function () {
+            d3.select(".tooltip").style("opacity", 0);
+          });
+        d3.scan([100, 0, 10], (a, b) => b - a);
+      }
+      d3.json("./weather.json").then((res) => {
+        drawLineChart(d3.select("#wrapper"), dimensions, res);
+      });
+    </script>
+  </body>
+</html>
